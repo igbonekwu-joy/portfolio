@@ -15,12 +15,12 @@
   --paper:      #f7f4ef;
   --paper-2:    #eeebe4;
   --paper-3:    #e4e0d8;
-  --accent:     #c84b2f;
-  --accent-dim: #e8cfc8;
-  --green:      #2a6048;
-  --green-dim:  #c8ddd6;
   --blue:       #1e4a7a;
   --blue-dim:   #c8d8ea;
+  --accent:     var(--blue);
+  --accent-dim: var(--blue-dim);
+  --green:      #2a6048;
+  --green-dim:  #c8ddd6;
   --rule:       #d8d4cc;
 
   --font-mono:  'DM Mono', monospace;
