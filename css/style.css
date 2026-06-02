@@ -891,6 +891,7 @@ code, .mono {
 .screenshot-modal__track {
   flex: 1;
   display: flex;
+  align-items: flex-start;
   gap: 1rem;
   overflow-x: auto;
   overflow-y: hidden;
@@ -915,15 +916,26 @@ code, .mono {
   flex: 0 0 100%;
   scroll-snap-align: center;
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
   align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  max-height: min(62vh, 560px);
+  justify-content: flex-start;
+  min-height: 220px;
+}
+
+.screenshot-modal__image-title {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
 }
 
 .screenshot-modal__slide img {
   max-width: 100%;
-  max-height: min(62vh, 560px);
+  max-height: min(calc(62vh - 2.25rem), 520px);
   width: auto;
   height: auto;
   object-fit: contain;

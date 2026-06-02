@@ -131,6 +131,12 @@
         .filter(Boolean);
     }
 
+    function parseGalleryTitles(trigger) {
+      const raw = trigger.getAttribute("data-gallery-titles");
+      if (!raw) return [];
+      return raw.split("|").map((s) => s.trim());
+    }
+
     function slideCount() {
       return track.querySelectorAll(".screenshot-modal__slide").length;
     }
@@ -176,7 +182,7 @@
       }
     }
 
-    function openModal(images, caption) {
+    function openModal(images, imageTitles, caption) {
       if (!images.length) return;
 
       lastFocus = document.activeElement;
@@ -185,6 +191,15 @@
       images.forEach((src, i) => {
         const slide = document.createElement("div");
         slide.className = "screenshot-modal__slide";
+
+        const imageTitle = imageTitles[i];
+        if (imageTitle) {
+          const label = document.createElement("p");
+          label.className = "screenshot-modal__image-title";
+          label.textContent = imageTitle;
+          slide.appendChild(label);
+        }
+
         const img = document.createElement("img");
         img.src = src;
         img.alt = caption ? `${caption} — screenshot ${i + 1}` : `Screenshot ${i + 1}`;
@@ -217,12 +232,13 @@
       e.preventDefault();
 
       const images = parseGallery(trigger);
+      const imageTitles = parseGalleryTitles(trigger);
       const caption =
         trigger.getAttribute("data-caption") ||
         trigger.closest(".project-card")?.querySelector(".project-name")?.textContent?.trim() ||
         "";
 
-      openModal(images, caption);
+      openModal(images, imageTitles, caption);
     });
 
     closeBtns.forEach((btn) => {
