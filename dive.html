@@ -1,0 +1,141 @@
+ <!--  DEEP DIVE  -->
+<section id="deep-dive" class="portfolio-section">
+    <div class="container">
+
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Featured Project Deep Dive</h2>
+        <div class="section-rule"></div>
+      </div>
+
+      <div class="row g-4">
+
+        <!-- Sticky ToC -->
+        <div class="col-md-3 dd-toc-col">
+          <ul class="dd-toc">
+            <li><a href="#dd-problem" class="active">Problem</a></li>
+            <li><a href="#dd-arch">Architecture</a></li>
+            <li><a href="#dd-endpoints">Endpoints</a></li>
+            <li><a href="#dd-challenge">Challenge</a></li>
+          </ul>
+        </div>
+
+        <!-- Content -->
+        <div class="col-md-9">
+          <p class="dd-project-label">Deep Dive / Featured Project</p>
+          <h3 class="dd-project-title">Notification Pipeline</h3>
+          <p class="dd-project-tag">Python · Celery · Redis · SendGrid · PostgreSQL</p>
+
+          <!-- Problem -->
+          <div class="dd-section" id="dd-problem">
+            <p class="dd-section-title">The problem</p>
+            <div class="dd-body">
+              <p>
+                The original product sent emails synchronously inside the HTTP
+                request cycle. A slow SendGrid response meant the API endpoint
+                would hang for 2–4 seconds — and if SendGrid was down, the user
+                got a 500 error for actions that had nothing to do with email.
+              </p>
+              <p>
+                The task was to pull all notification delivery out of the request
+                path and into a reliable async system, without losing events and
+                without duplicating deliveries.
+              </p>
+            </div>
+          </div>
+
+          <!-- Architecture -->
+          <div class="dd-section" id="dd-arch">
+            <p class="dd-section-title">Architecture / request flow</p>
+            <div class="dd-body">
+              <p>
+                An event fires in the API — an order is placed, a payment
+                clears, an account is flagged. The API handler writes a
+                notification record to PostgreSQL and enqueues a task to Redis.
+                It then returns immediately. Celery workers pick up tasks from
+                the queue, render the correct template, and call the relevant
+                delivery channel. The result is written back to the notification
+                record.
+              </p>
+            </div>
+            <div class="arch-flow">
+              <span class="arch-box">API Request</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">DB write</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">Redis enqueue</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">Celery worker</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">SendGrid / Push</span>
+            </div>
+          </div>
+
+          <!-- Endpoints -->
+          <div class="dd-section" id="dd-endpoints">
+            <p class="dd-section-title">Key endpoints</p>
+            <div class="endpoints-list">
+              <div class="endpoint">
+                <span class="ep-method post">POST</span>
+                <span class="ep-path">/notifications/trigger</span>
+                <span class="ep-note">Internal — fires an event, enqueues delivery</span>
+              </div>
+              <div class="endpoint">
+                <span class="ep-method get">GET</span>
+                <span class="ep-path">/notifications/</span>
+                <span class="ep-note">Returns paginated list for the authed user</span>
+              </div>
+              <div class="endpoint">
+                <span class="ep-method patch">PATCH</span>
+                <span class="ep-path">/notifications/:id/read</span>
+                <span class="ep-note">Marks a notification as read</span>
+              </div>
+              <div class="endpoint">
+                <span class="ep-method get">GET</span>
+                <span class="ep-path">/notifications/preferences</span>
+                <span class="ep-note">User's channel preferences</span>
+              </div>
+              <div class="endpoint">
+                <span class="ep-method patch">PATCH</span>
+                <span class="ep-path">/notifications/preferences</span>
+                <span class="ep-note">Update opt-in/out per event type</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Challenge -->
+          <div class="dd-section" id="dd-challenge">
+            <p class="dd-section-title">One challenge — duplicate deliveries</p>
+            <div class="dd-body">
+              <p>
+                Celery's retry mechanism re-enqueues a task when a worker
+                crashes mid-execution. With transactional email, a retry that
+                succeeded on the first attempt but crashed after the send call
+                would fire the same email twice. Users were getting duplicate
+                order-confirmation emails during a stress test.
+              </p>
+            </div>
+            <div class="challenge-box">
+              <p class="challenge-label">How I solved it</p>
+              <div class="dd-body">
+                <p>
+                  I added an <code>idempotency_key</code> column to the
+                  notification record — a hash of
+                  <code>(user_id, event_type, event_id)</code>. Before making
+                  the SendGrid call, the worker attempts to flip a
+                  <code>dispatched</code> flag on the record using a conditional
+                  update (<code>UPDATE … WHERE dispatched = false RETURNING id</code>).
+                  If the update returns no rows, the notification was already
+                  dispatched and the worker exits early. The dispatch and the DB
+                  flag update happen in the same database transaction, making
+                  double-delivery structurally impossible even under concurrent
+                  retries.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /col -->
+      </div><!-- /row -->
+    </div>
+</section>
