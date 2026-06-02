@@ -13,25 +13,17 @@
         <!-- Project 1 -->
         <div class="project-card">
           <p class="project-num">Project / 001</p>
-          <h3 class="project-name">User Auth Service</h3>
+          <h3 class="project-name">Insighta Labs+: Profile Intelligence System</h3>
           <p class="project-desc">
-            A standalone authentication microservice handling registration,
-            login, JWT issuance, token refresh, and role-based access for a
-            multi-tenant SaaS product.
+            A demographic query API built for speed and flexibility. Supports advanced filtering, sorting, pagination, and rule-based natural language search across 2,000+ profiles. No AI, just clean parsing logic.
           </p>
           <p class="project-contribution">
-            Built the full token lifecycle — issued short-lived access tokens
-            and rotating refresh tokens. Implemented rate limiting on login
-            endpoints to prevent brute-force attacks. Wrote integration tests
-            covering happy paths and edge cases.
+            Built the filtering and sorting engine from scratch, handling every combinable query parameter. Wrote the natural language parser that maps plain English to structured filters — fully rule-based, no external dependencies.
           </p>
           <div class="project-stack">
-            <span class="tag">Python</span>
-            <span class="tag">FastAPI</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">Express.js</span>
             <span class="tag">PostgreSQL</span>
-            <span class="tag">Redis</span>
-            <span class="tag">JWT</span>
-            <span class="tag accent">Auth</span>
           </div>
           <a class="project-proof" href="#">Demo deployment</a>
         </div>
@@ -39,51 +31,43 @@
         <!-- Project 2 -->
         <div class="project-card">
           <p class="project-num">Project / 002</p>
-          <h3 class="project-name">Notification Pipeline</h3>
+          <h3 class="project-name">Insighta Labs+: Auth, RBAC & Multi-Client Platform</h3>
           <p class="project-desc">
-            An async background-job system delivering email and in-app
-            notifications triggered by product events — new orders, payment
-            confirmations, and account alerts.
+            A secured multi-client platform built on top of the profile intelligence system. GitHub OAuth with PKCE, role-based access control, a globally installable CLI, and a web portal, all talking to the same backend.
           </p>
           <p class="project-contribution">
-            Designed the queue schema and worker logic using Celery with Redis
-            as broker. Built retry logic with exponential backoff and a
-            dead-letter queue for failed deliveries. Integrated SendGrid for
-            transactional email.
+            Implemented the full auth flow (OAuth with PKCE), access and refresh token rotation, and role enforcement across every endpoint. Built the CLI tool and web portal independently, both sharing the same auth layer with HTTP-only cookies and CSRF protection on the web side.
           </p>
           <div class="project-stack">
-            <span class="tag">Python</span>
-            <span class="tag">Celery</span>
-            <span class="tag">Redis</span>
-            <span class="tag">SendGrid</span>
+            <span class="tag">Node.js</span>
+            <span class="tag">Express.js</span>
             <span class="tag">PostgreSQL</span>
-            <span class="tag accent">Queues</span>
           </div>
-          <a class="project-proof" href="#">Screenshot</a>
+          <a
+            class="project-proof project-screenshot"
+            href="#"
+            role="button"
+            aria-haspopup="dialog"
+            data-caption="Insighta Labs+: Auth, RBAC & Multi-Client Platform"
+            data-gallery="assets/insighta-auth/screenshot-1.png,assets/insighta-auth/screenshot-2.png"
+          >Screenshot</a>
         </div>
 
         <!-- Project 3 -->
         <div class="project-card">
           <p class="project-num">Project / 003</p>
-          <h3 class="project-name">Product Catalogue API</h3>
+          <h3 class="project-name">Insighta Labs+: Query Optimization & CSV Ingestion</h3>
           <p class="project-desc">
-            A RESTful API for managing a product catalogue with full CRUD,
-            image upload handling, inventory tracking, and paginated search
-            with filters.
+            A performance-focused upgrade to an already live system handling hundreds of queries per minute over a million records. Optimized for speed, cache efficiency, and large-scale data ingestion under concurrent load.
           </p>
           <p class="project-contribution">
-            Designed the database schema and wrote all endpoints. Set up
-            query-level caching with Redis to keep response times under 80 ms
-            on the most-hit routes. Documented all endpoints with
-            OpenAPI/Swagger.
+            Cut query response times to the low hundreds of milliseconds through indexing, connection pooling, and query restructuring. Built a canonical filter normalization layer to maximize cache hits. Designed a streaming CSV ingestion pipeline that processes 500k-row uploads in chunks, non-blocking, concurrent-safe, with per-row validation and a detailed result summary.
           </p>
           <div class="project-stack">
             <span class="tag">Node.js</span>
-            <span class="tag">Express</span>
+            <span class="tag">Express.js</span>
             <span class="tag">PostgreSQL</span>
             <span class="tag">Redis</span>
-            <span class="tag">AWS S3</span>
-            <span class="tag accent">REST API</span>
           </div>
           <a class="project-proof" href="#">Swagger docs</a>
         </div>
@@ -91,27 +75,61 @@
         <!-- Project 4 -->
         <div class="project-card">
           <p class="project-num">Project / 004</p>
-          <h3 class="project-name">Team Collaboration API</h3>
+          <h3 class="project-name">Employer-Candidate Shortlisting System (Skillbridge)</h3>
           <p class="project-desc">
-            Backend for a lightweight project management tool — workspaces,
-            teams, tasks with assignments, comments, and a permission model
-            with org-level roles.
+            A shortlisting feature that lets employers bookmark and organize candidates they're interested in, built through a full RFC-first engineering process, proposal, cross-team alignment, and implementation.
           </p>
           <p class="project-contribution">
-            Built the permission layer (owner / admin / member) and the task
-            assignment module. Wrote database migrations using Alembic. Added
-            structured logging with request IDs to make debugging production
-            issues traceable.
+            Wrote the RFC before touching any code, defined the problem, proposed the solution, mapped cross-track impact for frontend and design, and documented alternatives considered. Built the feature to match the contract exactly, and logged every divergence from the original proposal.
           </p>
           <div class="project-stack">
-            <span class="tag">Python</span>
-            <span class="tag">Django</span>
-            <span class="tag">DRF</span>
+            <span class="tag">Nest.js</span>
             <span class="tag">PostgreSQL</span>
-            <span class="tag">Docker</span>
-            <span class="tag accent">Permissions</span>
           </div>
           <a class="project-proof" href="#">Deployment link</a>
+        </div>
+
+        <!-- Project 5 -->
+        <div class="project-card">
+          <p class="project-num">Project / 005</p>
+          <h3 class="project-name">Candidate Personal Assessment System (Skillbridge)</h3>
+          <p class="project-desc">
+            A production-grade, multi-step assessment pipeline for Skillbridge (A talent-pipeline application), handling personal, skill, and advanced evaluation stages for job candidates. Built as a team, designed to hold up under real usage, concurrent submissions, partial failures, edge cases, and all.
+          </p>
+          <p class="project-contribution">
+            Collaborated as part of a team to ship a three-stage candidate assessment system end-to-end. Contributed to the backend architecture covering the full personal assessment flow, validation at each step, and graceful failure handling for incomplete or invalid submissions. Worked across integration testing, edge case documentation, and API contract definition to ensure frontend and other tracks weren't blocked or surprised.
+          </p>
+          <div class="project-stack">
+            <span class="tag">Nest.js</span>
+            <span class="tag">PostgreSQL</span>
+          </div>
+          <a class="project-proof" href="#">Deployment link</a>
+        </div>
+
+        <!-- Project 6 -->
+        <div class="project-card">
+          <p class="project-num">Project / 006</p>
+          <h3 class="project-name">Retry Engine</h3>
+          <p class="project-desc">
+            A fault-tolerant HTTP retry service built for fintech and e-commerce scale. Accepts outbound requests, persists them immediately, and processes them in the background with exponential backoff, jitter, and dead-lettering, so transient failures never lose work.
+          </p>
+          <p class="project-contribution">
+            Built the full retry pipeline, a POST endpoint that returns immediately with a pending status while a background worker handles the actual call. Implemented exponential backoff doubling from 1s to 16s with per-attempt jitter, smart retry logic that retries on 5xx and timeouts but treats 4xx as terminal, and a dead-letter mechanism that stops retrying at maxRetries and never revisits failed requests. Persisted every attempt to a relational DB (sqlite) with full history queryable by request ID or status.
+          </p>
+          <div class="project-stack">
+            <span class="tag">Node.js</span>
+            <span class="tag">Express.js</span>
+            <span class="tag">SQLite</span>
+            <span class="tag">Background Worker</span>
+          </div>
+          <a
+            class="project-proof project-screenshot"
+            href="#"
+            role="button"
+            aria-haspopup="dialog"
+            data-caption="Retry Engine"
+            data-gallery="assets/retry-engine/retry-1.png,assets/retry-engine/retry-2.png"
+          >Screenshot</a>
         </div>
 
       </div>

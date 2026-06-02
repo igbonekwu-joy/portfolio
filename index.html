@@ -88,6 +88,26 @@
       });
   </script>
 
+  <!-- Screenshot lightbox (project gallery) -->
+  <div id="screenshot-modal" class="screenshot-modal" hidden aria-hidden="true">
+    <div class="screenshot-modal__backdrop" data-close-modal></div>
+    <div
+      class="screenshot-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="screenshot-modal-title"
+    >
+      <button type="button" class="screenshot-modal__close" aria-label="Close gallery" data-close-modal>&times;</button>
+      <h2 id="screenshot-modal-title" class="screenshot-modal__title"></h2>
+      <div class="screenshot-modal__viewport">
+        <button type="button" class="screenshot-modal__nav screenshot-modal__nav--prev" aria-label="Previous image" hidden>&lsaquo;</button>
+        <div class="screenshot-modal__track" tabindex="0"></div>
+        <button type="button" class="screenshot-modal__nav screenshot-modal__nav--next" aria-label="Next image" hidden>&rsaquo;</button>
+      </div>
+      <p class="screenshot-modal__counter" hidden></p>
+    </div>
+  </div>
+
   <!-- Footer -->
   <div id="footer-placeholder"></div>
   <script>
