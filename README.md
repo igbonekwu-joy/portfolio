@@ -1,4 +1,4 @@
-# Joy Igbonekwu Portfolio
+# My HNG Portfolio
 
 Simple personal portfolio website for HNG.
 
