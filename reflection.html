@@ -1,0 +1,65 @@
+<!-- REFLECTION -->
+<section id="reflection" class="portfolio-section">
+    <div class="container">
+
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Learning Reflection</h2>
+        <div class="section-rule"></div>
+      </div>
+
+      <blockquote class="reflection-quote">
+        "I came in thinking I knew how to build APIs. I left knowing how to
+        build APIs that don't embarrass you at 3 a.m."
+      </blockquote>
+
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <div class="reflection-card">
+            <h4 class="reflection-title">Async changed how I think</h4>
+            <p class="reflection-body">
+              The notification project was my first real encounter with
+              distributed failure modes. A task timing out, a worker crashing
+              mid-run, a broker going down — none of these were hypothetical.
+              I now default to asking "what happens when this fails mid-way?"
+              before I write the happy path.
+            </p>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="reflection-card">
+            <h4 class="reflection-title">Testing is design feedback</h4>
+            <p class="reflection-body">
+              Writing integration tests for the auth service exposed three bad
+              decisions in my schema within the first hour. I used to write
+              tests as a final step. Now I use them to pressure-test my
+              assumptions before they calcify into migrations.
+            </p>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="reflection-card">
+            <h4 class="reflection-title">Logging is kindness to future-you</h4>
+            <p class="reflection-body">
+              I spent two hours debugging a permissions bug in staging before
+              adding structured logs with request IDs. I found the cause in ten
+              minutes after that. I now add structured logging before I deploy
+              anything.
+            </p>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="reflection-card">
+            <h4 class="reflection-title">Specificity over coverage</h4>
+            <p class="reflection-body">
+              HNG rewards engineers who own something completely over engineers
+              who touch everything lightly. Working at that depth — really
+              understanding a token's lifecycle or a queue's failure modes — is
+              what separates "I used Redis" from "I know Redis."
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+</section>
