@@ -23,23 +23,18 @@
         <!-- Content -->
         <div class="col-md-9">
           <p class="dd-project-label">Deep Dive / Featured Project</p>
-          <h3 class="dd-project-title">Notification Pipeline</h3>
-          <p class="dd-project-tag">Python · Celery · Redis · SendGrid · PostgreSQL</p>
+          <h3 class="dd-project-title">Retry Engine</h3>
+          <p class="dd-project-tag">Node.js · Express.js · Sqlite · Background Worker</p>
 
           <!-- Problem -->
           <div class="dd-section" id="dd-problem">
             <p class="dd-section-title">The problem</p>
             <div class="dd-body">
               <p>
-                The original product sent emails synchronously inside the HTTP
-                request cycle. A slow SendGrid response meant the API endpoint
-                would hang for 2–4 seconds — and if SendGrid was down, the user
-                got a 500 error for actions that had nothing to do with email.
+                In fintech and e-commerce, the backend constantly makes calls to external APIs, and it sometimes fails because of various reasons, like unreliable network, overloaded servers, and third party API downtime. If it is retried too fast, it makes things worse. If it is not retried at all, work is lost. 
               </p>
               <p>
-                The task was to pull all notification delivery out of the request
-                path and into a reliable async system, without losing events and
-                without duplicating deliveries.
+                The retry engine solves this by accepting a request, returning immediately, and retrying the task in the background until it succeeds, with an exponential backoff and jitter strategy. It spaces out retries intelligently, giving the external services time to recover.
               </p>
             </div>
           </div>
@@ -49,26 +44,23 @@
             <p class="dd-section-title">Architecture / request flow</p>
             <div class="dd-body">
               <p>
-                An event fires in the API — an order is placed, a payment
-                clears, an account is flagged. The API handler writes a
-                notification record to PostgreSQL and enqueues a task to Redis.
-                It then returns immediately. Celery workers pick up tasks from
-                the queue, render the correct template, and call the relevant
-                delivery channel. The result is written back to the notification
-                record.
+                The client makes a request --> Express API validates the payload, and saves the job to sqlite with a pending status --> API returns 202 Accepted to the client immediately --> A background worker continuously polls the database for pending jobs, picks one up, and attempts to execute it --> If the job succeeds, the worker updates the record to completed. If it fails with a retryable error, it calculates the next retry time using exponential backoff with jitter, updates the record with the new retry time, and moves on to the next pending job. If it fails with a non-retryable error or exceeds max retries, it marks the record as failed and moves on.
               </p>
             </div>
             <div class="arch-flow">
               <span class="arch-box">API Request</span>
               <span class="arch-arrow">→</span>
-              <span class="arch-box">DB write</span>
+              <span class="arch-box">Validate Payload</span>
               <span class="arch-arrow">→</span>
-              <span class="arch-box">Redis enqueue</span>
+              <span class="arch-box">DB Write (Pending Job)</span>
               <span class="arch-arrow">→</span>
-              <span class="arch-box">Celery worker</span>
+              <span class="arch-box">202 Accepted</span>
               <span class="arch-arrow">→</span>
-              <span class="arch-box">SendGrid / Push</span>
-            </div>
+              <span class="arch-box">Worker Polls DB</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">Execute Job</span>
+              <span class="arch-arrow">→</span>
+              <span class="arch-box">DB Update (Completed / Retry / Failed)</span>
           </div>
 
           <!-- Endpoints -->
@@ -77,59 +69,35 @@
             <div class="endpoints-list">
               <div class="endpoint">
                 <span class="ep-method post">POST</span>
-                <span class="ep-path">/notifications/trigger</span>
-                <span class="ep-note">Internal — fires an event, enqueues delivery</span>
+                <span class="ep-path">/request</span>
+                <span class="ep-note">Submit a new job for the worker to process</span>
               </div>
               <div class="endpoint">
                 <span class="ep-method get">GET</span>
-                <span class="ep-path">/notifications/</span>
-                <span class="ep-note">Returns paginated list for the authed user</span>
+                <span class="ep-path">/requests/:id</span>
+                <span class="ep-note">Returns details for a specific request and its full attempt history</span>
               </div>
               <div class="endpoint">
-                <span class="ep-method patch">PATCH</span>
-                <span class="ep-path">/notifications/:id/read</span>
-                <span class="ep-note">Marks a notification as read</span>
-              </div>
-              <div class="endpoint">
-                <span class="ep-method get">GET</span>
-                <span class="ep-path">/notifications/preferences</span>
-                <span class="ep-note">User's channel preferences</span>
-              </div>
-              <div class="endpoint">
-                <span class="ep-method patch">PATCH</span>
-                <span class="ep-path">/notifications/preferences</span>
-                <span class="ep-note">Update opt-in/out per event type</span>
+                <span class="ep-method patch">GET</span>
+                <span class="ep-path">/requests?status=:status</span>
+                <span class="ep-note">Lists requests filtered by status</span>
               </div>
             </div>
           </div>
 
           <!-- Challenge -->
           <div class="dd-section" id="dd-challenge">
-            <p class="dd-section-title">One challenge — duplicate deliveries</p>
+            <p class="dd-section-title">Technical Challenge: Duplicate Job Processing</p>
             <div class="dd-body">
               <p>
-                Celery's retry mechanism re-enqueues a task when a worker
-                crashes mid-execution. With transactional email, a retry that
-                succeeded on the first attempt but crashed after the send call
-                would fire the same email twice. Users were getting duplicate
-                order-confirmation emails during a stress test.
+                The worker kept processing the same jobs multiple times, like when a job is already being processed but hasn't been marked as such in the database yet, the worker picks it up again and starts another attempt in parallel, leading to duplicate rows and potential issues in the future. 
               </p>
             </div>
             <div class="challenge-box">
               <p class="challenge-label">How I solved it</p>
               <div class="dd-body">
                 <p>
-                  I added an <code>idempotency_key</code> column to the
-                  notification record — a hash of
-                  <code>(user_id, event_type, event_id)</code>. Before making
-                  the SendGrid call, the worker attempts to flip a
-                  <code>dispatched</code> flag on the record using a conditional
-                  update (<code>UPDATE … WHERE dispatched = false RETURNING id</code>).
-                  If the update returns no rows, the notification was already
-                  dispatched and the worker exits early. The dispatch and the DB
-                  flag update happen in the same database transaction, making
-                  double-delivery structurally impossible even under concurrent
-                  retries.
+                  I locked the job synchronously before doing anything async. I updated the status to 'processing' immediately. Since better-sqlite3 is synchronous, <code>the UPDATE status = 'processing'</code> runs and commits instantly, before any await. By the time the next worker tick runs, the row is already processing and the <code>SELECT</code> query ignores it.
                 </p>
               </div>
             </div>
