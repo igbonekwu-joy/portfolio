@@ -63,10 +63,168 @@
     );
   }
 
+  /* ── Project screenshot lightbox ── */
+  function initScreenshotGallery() {
+    const modal = document.getElementById("screenshot-modal");
+    if (!modal) return;
+
+    const backdrop = modal.querySelector(".screenshot-modal__backdrop");
+    const dialog = modal.querySelector(".screenshot-modal__dialog");
+    const titleEl = document.getElementById("screenshot-modal-title");
+    const track = modal.querySelector(".screenshot-modal__track");
+    const counter = modal.querySelector(".screenshot-modal__counter");
+    const btnPrev = modal.querySelector(".screenshot-modal__nav--prev");
+    const btnNext = modal.querySelector(".screenshot-modal__nav--next");
+    const closeBtns = modal.querySelectorAll("[data-close-modal]");
+
+    let lastFocus = null;
+
+    function parseGallery(trigger) {
+      const raw = trigger.getAttribute("data-gallery") || "";
+      return raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    function slideCount() {
+      return track.querySelectorAll(".screenshot-modal__slide").length;
+    }
+
+    function activeIndex() {
+      const slides = track.querySelectorAll(".screenshot-modal__slide");
+      if (!slides.length) return 0;
+      const trackRect = track.getBoundingClientRect();
+      const center = trackRect.left + trackRect.width / 2;
+      let closest = 0;
+      let minDist = Infinity;
+      slides.forEach((slide, i) => {
+        const r = slide.getBoundingClientRect();
+        const slideCenter = r.left + r.width / 2;
+        const dist = Math.abs(slideCenter - center);
+        if (dist < minDist) {
+          minDist = dist;
+          closest = i;
+        }
+      });
+      return closest;
+    }
+
+    function scrollToSlide(index) {
+      const slide = track.querySelectorAll(".screenshot-modal__slide")[index];
+      if (!slide) return;
+      slide.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+
+    function updateUI() {
+      const total = slideCount();
+      const index = activeIndex();
+      const multi = total > 1;
+
+      counter.hidden = !multi;
+      btnPrev.hidden = !multi;
+      btnNext.hidden = !multi;
+
+      if (multi) {
+        counter.textContent = `${index + 1} / ${total}`;
+        btnPrev.disabled = index <= 0;
+        btnNext.disabled = index >= total - 1;
+      }
+    }
+
+    function openModal(images, caption) {
+      if (!images.length) return;
+
+      lastFocus = document.activeElement;
+      track.innerHTML = "";
+
+      images.forEach((src, i) => {
+        const slide = document.createElement("div");
+        slide.className = "screenshot-modal__slide";
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = caption ? `${caption} — screenshot ${i + 1}` : `Screenshot ${i + 1}`;
+        img.loading = "lazy";
+        slide.appendChild(img);
+        track.appendChild(slide);
+      });
+
+      titleEl.textContent = caption || "Screenshots";
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      updateUI();
+      modal.querySelector(".screenshot-modal__close").focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      track.innerHTML = "";
+      if (lastFocus && typeof lastFocus.focus === "function") {
+        lastFocus.focus();
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest(".project-screenshot");
+      if (!trigger) return;
+      e.preventDefault();
+
+      const images = parseGallery(trigger);
+      const caption =
+        trigger.getAttribute("data-caption") ||
+        trigger.closest(".project-card")?.querySelector(".project-name")?.textContent?.trim() ||
+        "";
+
+      openModal(images, caption);
+    });
+
+    closeBtns.forEach((btn) => {
+      btn.addEventListener("click", closeModal);
+    });
+
+    btnPrev.addEventListener("click", () => {
+      scrollToSlide(Math.max(0, activeIndex() - 1));
+    });
+
+    btnNext.addEventListener("click", () => {
+      scrollToSlide(Math.min(slideCount() - 1, activeIndex() + 1));
+    });
+
+    track.addEventListener("scroll", () => {
+      window.requestAnimationFrame(updateUI);
+    }, { passive: true });
+
+    document.addEventListener("keydown", (e) => {
+      if (modal.hidden) return;
+
+      if (e.key === "Escape") {
+        closeModal();
+        return;
+      }
+
+      if (slideCount() <= 1) return;
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        scrollToSlide(Math.max(0, activeIndex() - 1));
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        scrollToSlide(Math.min(slideCount() - 1, activeIndex() + 1));
+      }
+    });
+
+    dialog.addEventListener("click", (e) => e.stopPropagation());
+  }
+
   /* ── Boot ── */
   document.addEventListener("DOMContentLoaded", () => {
     initDeepDiveToc();
     initSmoothScroll();
     initNavScroll();
+    initScreenshotGallery();
   });
 })();
