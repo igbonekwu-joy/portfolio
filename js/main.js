@@ -33,27 +33,46 @@
 
   /* ── Smooth-scroll for all in-page anchor links ── */
   function initSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-      anchor.addEventListener("click", function (e) {
-        const target = document.querySelector(this.getAttribute("href"));
-        if (!target) return;
-        e.preventDefault();
-        const navH = document.querySelector(".site-nav")?.offsetHeight ?? 64;
-        const top =
-          target.getBoundingClientRect().top + window.scrollY - navH - 16;
-        window.scrollTo({ top, behavior: "smooth" });
-      });
+    // Delegate clicks so links injected via fetch still work.
+    document.addEventListener("click", (e) => {
+      const anchor = e.target.closest('a[href^="#"]');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href || href === "#") return;
+
+      const target = document.querySelector(href);
+      if (!target) return;
+
+      e.preventDefault();
+      const navH = document.querySelector(".site-nav")?.offsetHeight ?? 64;
+      const top =
+        target.getBoundingClientRect().top + window.scrollY - navH - 16;
+      window.scrollTo({ top, behavior: "smooth" });
+
+      // Close mobile nav after choosing a section.
+      const menu = document.getElementById("navMenu");
+      if (!menu || !menu.classList.contains("show")) return;
+
+      if (window.bootstrap?.Collapse) {
+        window.bootstrap.Collapse.getOrCreateInstance(menu).hide();
+      } else {
+        menu.classList.remove("show");
+        const toggler = document.querySelector(
+          '.navbar-toggler[data-bs-target="#navMenu"]'
+        );
+        if (toggler) toggler.setAttribute("aria-expanded", "false");
+      }
     });
   }
 
   /* ── Navbar background opacity on scroll ── */
   function initNavScroll() {
-    const nav = document.querySelector(".site-nav");
-    if (!nav) return;
-
     window.addEventListener(
       "scroll",
       () => {
+        const nav = document.querySelector(".site-nav");
+        if (!nav) return;
         nav.style.borderColor =
           window.scrollY > 10 ? "var(--rule)" : "transparent";
         nav.style.boxShadow =
@@ -61,6 +80,31 @@
       },
       { passive: true }
     );
+  }
+
+  /* ── Mobile nav toggle fallback ── */
+  function initNavToggleFallback() {
+    // Nav is injected via fetch, so use delegated click handling.
+    document.addEventListener("click", (e) => {
+      const toggler = e.target.closest(".navbar-toggler[data-bs-target]");
+      if (!toggler) return;
+
+      const targetSelector = toggler.getAttribute("data-bs-target");
+      if (!targetSelector) return;
+
+      const menu = document.querySelector(targetSelector);
+      if (!menu) return;
+
+      // If Bootstrap is present, let it handle collapse.
+      if (window.bootstrap?.Collapse) {
+        window.bootstrap.Collapse.getOrCreateInstance(menu).toggle();
+        return;
+      }
+
+      // Fallback: toggle the same class Bootstrap uses.
+      const isOpen = menu.classList.toggle("show");
+      toggler.setAttribute("aria-expanded", String(isOpen));
+    });
   }
 
   /* ── Project screenshot lightbox ── */
@@ -225,6 +269,7 @@
     initDeepDiveToc();
     initSmoothScroll();
     initNavScroll();
+    initNavToggleFallback();
     initScreenshotGallery();
   });
 })();
